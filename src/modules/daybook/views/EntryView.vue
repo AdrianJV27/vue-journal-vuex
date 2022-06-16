@@ -1,9 +1,9 @@
 <template>
   <div class="entry-title d-flex justify-content-between p-2">
     <div>
-      <span class="text-success fs-3 fw-bold"> 15 </span>
-      <span class="mx-1 fs-3"> Julio </span>
-      <span class="mx-2 fs-4 fw-light"> 2021, Jueves </span>
+      <span class="text-success fs-3 fw-bold"> {{ day }} </span>
+      <span class="mx-1 fs-3">  {{ month }} </span>
+      <span class="mx-2 fs-4 fw-light">  {{ yearDay }} </span>
     </div>
 
     <div>
@@ -18,7 +18,7 @@
 
   <hr />
   <div class="d-flex flex-column px-3 h-75">
-    <textarea placeholder="¿Que sucedió hoy?"></textarea>
+    <textarea v-model="entry.text" placeholder="¿Que sucedió hoy?"></textarea>
   </div>
 
   <DayBookFab 
@@ -34,12 +34,55 @@
 
 <script>
 import { defineAsyncComponent } from "vue";
+import { mapGetters } from 'vuex';
+import getDayMothYear from '../helpers/getDayMothYear'
 export default {
+  props:{
+    id:{
+      type: String,
+      required: true
+
+    }
+  },
   components: {
     DayBookFab: defineAsyncComponent(() =>
       import("../components/DayBookFab.vue")
     ),
   },
+  data(){
+    return {
+      entry: null
+    }
+  },
+  computed:{
+    ...mapGetters('journal', ['getEntryById']),
+    day(){
+      const { day } = getDayMothYear( this.entry.date )
+      return day
+    },
+    month(){
+      const { month } = getDayMothYear( this.entry.date )
+      return month
+    },
+    yearDay(){
+      const { yearDay } = getDayMothYear( this.entry.date )
+      return yearDay
+    },
+  },
+  methods:{
+    loadEntry(){
+      const entry = this.getEntryById(this.id)
+      if( !entry ) {
+        this.$router.push({name: 'no-entry'})
+      }
+
+      this.entry = entry
+    }
+  },
+  created(){
+    //console.log($this.$route.params.id) Se puede usar pero no es recomendable, es mejor usar las props para controlarlo mejor y si hay un error nos mostrara de que componente es
+    this.loadEntry()
+  }
 };
 </script>
 
